@@ -8,13 +8,13 @@ from common.utils import create_progress_bar
 
 class PedalPercentageLabel(Label):
 
-    def __init__(self, pedal: str, percentage:int):
-        self.pedal = pedal
+    def __init__(self, pedal: str, percentage:int, custom_text: str=''):
+        self._text = pedal + custom_text
         self.percentage = percentage
         super().__init__(text=self._format_content())
 
     def _format_content(self):
-        return HTML(f'<text>{self.pedal}:</text> <bar>{create_progress_bar(self.percentage)}%</bar>')
+        return HTML(f'{self._text}: {create_progress_bar(self.percentage)}%')
 
     def update_content(self, percentage):
         self.percentage = percentage
@@ -26,8 +26,7 @@ class PedalMButton(Button):
     def __init__(self, text: str, pedal: Pin, position: int):
         self.pedal = pedal
         self._text = text
-        super().__init__(text=text, handler= lambda: self.change_pedal_calibration_value(position),
-                         left_symbol=' ', right_symbol=' ',)
+        super().__init__(text=text, handler= lambda: self.change_pedal_calibration_value(position))
     
     def _change_json_var(self, var, new_value, position):
         with open('C:\\Users\\augus\\Documentos\\GitHub\WheelInterface\\hardware_control\\calib_data.json', 'r') as file:
@@ -55,14 +54,14 @@ class PedalsData():
     def buttons_layout(self, pin: Pin, position: int):
         return VSplit([
             PedalMButton('min', pin, position), 
-            Window(char=' ', width=40),
+            Window(char=' ', width=42),
             PedalMButton('max', pin, position)
         ])
 
-    def create_container(self, pedals: dict, pedals_pins):
-        self.acelerator = PedalPercentageLabel('Acelerator', pedals['acelerator'])
-        self.brake = PedalPercentageLabel("Brake", pedals['brake'])
-        self.clutch = PedalPercentageLabel("Clutch  ", pedals['clutch'])
+    def create_container(self, pedals_content: dict, pedals_pins):
+        self.acelerator = PedalPercentageLabel('Acelerator', pedals_content['acelerator'])
+        self.brake = PedalPercentageLabel("Brake", pedals_content['brake'], "     ")
+        self.clutch = PedalPercentageLabel("Clutch  ", pedals_content['clutch'], "  ")
 
         win = HSplit([
             self.acelerator,
