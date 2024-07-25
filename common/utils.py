@@ -1,3 +1,26 @@
+import json
+import os
+
+class CacheValidation:
+    
+    def __init__(self, file_name:str):
+        self.file_name = file_name
+        with open(file_name, 'r') as file:
+            self.data = json.load(file)
+        self.last_update = os.path.getmtime(self.file_name)
+    
+    def update(self):
+        last_update = os.path.getmtime(self.file_name)
+        if last_update != self.last_update:
+            self.last_update = last_update
+            with open(self.file_name, 'r') as file:
+                self.data = json.load(file)
+
+    def get_data(self):
+        self.update()
+        return self.data
+
+
 def map_range(value: int | float, from_min: int | float, from_max: int | float, to_min: int, to_max: int) -> int:
     """
     Map a value from one range to another range.
@@ -24,5 +47,4 @@ def create_progress_bar(percentage: int):
     progress = int(total * (percentage / 100))
     bar = '▆' * progress + ' ' * (total - progress)
     return f'{bar} {percentage}'
-
 

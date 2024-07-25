@@ -1,20 +1,20 @@
 from hardware_control.arduino_controller import ArduinoController
-from joystick import VJoyInterface
+from joystick_control.joystick import VJoyInterface
 from ui.steering_wheel_app import SteeringWheelApp
-from ui.containers import pedals_bar
+from ui.containers import pedals_data
 import threading
 import time
 
 arduino = ArduinoController() # Arduino
 joystick = VJoyInterface(arduino)
 
-bar = pedals_bar.PedalsBar()
-app = SteeringWheelApp([1315, 173], bar.create_window_pedals_content({'acelerator': 0, 'brake': 0, 'clutch': 0}))
+bar = pedals_data.PedalsData()
+app = SteeringWheelApp([1315, 173], bar.create_container({'acelerator': 0, 'brake': 0, 'clutch': 0}, arduino.pedal_mannager.PEDALS))
 
 def background():
     while True:
         pedals_content = joystick.set_pedal_axis()
-        bar.update_pedals_bar_content(pedals_content)
+        bar.update_container_content(pedals_content)
         app.invalidate()
         time.sleep(0.01)
 

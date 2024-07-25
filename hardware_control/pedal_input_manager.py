@@ -1,4 +1,5 @@
 from pyfirmata import Arduino
+from common.utils import CacheValidation
 
 class PedalInputManager:
 
@@ -9,22 +10,7 @@ class PedalInputManager:
             "clutch": board.get_pin('a:2:i')
         }
 
-        self.PEDALS_MIN_VALUE = [0.4027, 0.5347, 0.4282]
-        self.PEDALS_MAX_VALUE = [0.4545, 0.5103, 0.4409]
-
-        self.pedals_range = {
-            "acelerator": [
-                self.PEDALS_MAX_VALUE[0], self.PEDALS_MIN_VALUE[0], self.PEDALS_MAX_VALUE[0] - self.PEDALS_MIN_VALUE[0]
-                ], 
-                
-            "brake": [
-                self.PEDALS_MAX_VALUE[1], self.PEDALS_MIN_VALUE[1], self.PEDALS_MAX_VALUE[1] - self.PEDALS_MIN_VALUE[1]
-                ], 
-
-            "clutch": [
-                self.PEDALS_MAX_VALUE[2], self.PEDALS_MIN_VALUE[2], self.PEDALS_MAX_VALUE[2] - self.PEDALS_MIN_VALUE[2]
-                ]
-        }
+        self.cache_validation = CacheValidation('C:\\Users\\augus\\Documentos\\GitHub\WheelInterface\\hardware_control\\calib_data.json')
     
     def get_raw_data(self):
         data = {
@@ -35,17 +21,41 @@ class PedalInputManager:
 
         return data
 
-    def get_map_data(self):
-        data = {"acelerator": None, "brake": None, "clutch": None}
-
-        def read_and_map_pedal(pin, pedal_range):
+    def _read_and_map_pedal(self, pin, pedal_range):
             value = pin.read()
             if value is None:
                 return None
-            return int(abs(max(0, min(abs((value - pedal_range[1]) / pedal_range[2]) * 100, 100)) - 100))
+            result = (value - pedal_range[1]) / pedal_range[2] * 100
 
-        data["acelerator"] = read_and_map_pedal(self.PEDALS["acelerator"], self.pedals_range["acelerator"])
-        data["brake"] = read_and_map_pedal(self.PEDALS["brake"], self.pedals_range["brake"])
-        data["clutch"] = read_and_map_pedal(self.PEDALS["clutch"], self.pedals_range["clutch"])
+            # if pin is self.PEDALS['brake']:
+                # return int(max(0, min(result * -1, 100)))
+                
+            return int(max(0, min(result, 100)))
+
+    def get_map_data(self):
+        cache_data = self.cache_validation.get_data()
+
+        pedals_min_value = cache_data['pedals_min_value']
+        pedals_max_value = cache_data['pedals_max_value']
+        
+        pedals_range = {
+            "acelerator": [
+                pedals_max_value[0], pedals_min_value[0], pedals_max_value[0] - pedals_min_value[0]
+                ], 
+                
+            "brake": [
+                pedals_max_value[1], pedals_min_value[1], pedals_max_value[1] - pedals_min_value[1]
+                ], 
+
+            "clutch": [
+                pedals_max_value[2], pedals_min_value[2], pedals_max_value[2] - pedals_min_value[2]
+                ]
+        }
+
+        data = {"acelerator": None, "brake": None, "clutch": None}
+
+        data["acelerator"] = self._read_and_map_pedal(self.PEDALS["acelerator"], pedals_range["acelerator"])
+        data["brake"] = self._read_and_map_pedal(self.PEDALS["brake"], pedals_range["brake"])
+        data["clutch"] = self._read_and_map_pedal(self.PEDALS["clutch"], pedals_range["clutch"])
 
         return data
