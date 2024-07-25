@@ -11,14 +11,19 @@ joystick = VJoyInterface(arduino)
 bar = pedals_data.PedalsData()
 app = SteeringWheelApp([1315, 173], bar.create_container({'acelerator': 0, 'brake': 0, 'clutch': 0}, arduino.pedal_mannager.PEDALS))
 
-def background():
-    while True:
-        pedals_content = joystick.set_pedal_axis()
-        bar.update_container_content(pedals_content)
-        app.invalidate()
-        time.sleep(0.01)
+def main():
+    def background():
+        while True:
+            pedals_content = joystick.set_pedal_axis()
+            bar.update_container_content(pedals_content)
+            app.invalidate()
+            time.sleep(0.01)
 
-back = threading.Thread(target=background)
-back.start()
+    back = threading.Thread(target=background)
+    back.start()
 
-app.run()
+    app.run()
+
+if __name__ == "__main__":
+    main()
+    

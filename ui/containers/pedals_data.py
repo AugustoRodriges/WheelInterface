@@ -1,5 +1,5 @@
 from prompt_toolkit import HTML
-from prompt_toolkit.layout.containers import HSplit, VSplit
+from prompt_toolkit.layout.containers import HSplit, VSplit, Window
 from prompt_toolkit.widgets import Label, Button
 import json
 from pyfirmata import Pin
@@ -23,10 +23,11 @@ class PedalPercentageLabel(Label):
 
 class PedalMButton(Button):
 
-    def __init__(self, text: str, pedal: Pin, position):
+    def __init__(self, text: str, pedal: Pin, position: int):
         self.pedal = pedal
         self._text = text
-        super().__init__(text=text, handler= lambda: self.change_pedal_calibration_value(position))
+        super().__init__(text=text, handler= lambda: self.change_pedal_calibration_value(position),
+                         left_symbol=' ', right_symbol=' ',)
     
     def _change_json_var(self, var, new_value, position):
         with open('C:\\Users\\augus\\Documentos\\GitHub\WheelInterface\\hardware_control\\calib_data.json', 'r') as file:
@@ -51,6 +52,13 @@ class PedalsData():
     def __init__(self):
         pass
 
+    def buttons_layout(self, pin: Pin, position: int):
+        return VSplit([
+            PedalMButton('min', pin, position), 
+            Window(char=' ', width=40),
+            PedalMButton('max', pin, position)
+        ])
+
     def create_container(self, pedals: dict, pedals_pins):
         self.acelerator = PedalPercentageLabel('Acelerator', pedals['acelerator'])
         self.brake = PedalPercentageLabel("Brake", pedals['brake'])
@@ -58,11 +66,11 @@ class PedalsData():
 
         win = HSplit([
             self.acelerator,
-            VSplit([PedalMButton('min', pedals_pins["acelerator"], 0), PedalMButton('max', pedals_pins["acelerator"], 0)]),
+            self.buttons_layout(pedals_pins["acelerator"], 0),
             self.brake,
-            VSplit([PedalMButton('min', pedals_pins["brake"], 1), PedalMButton('max', pedals_pins["brake"], 1)]),
+            self.buttons_layout(pedals_pins["brake"], 1),
             self.clutch,
-            VSplit([PedalMButton('min', pedals_pins["clutch"], 2), PedalMButton('max', pedals_pins["clutch"], 2)]),
+            self.buttons_layout(pedals_pins["clutch"], 2),
         ])
 
         return win
