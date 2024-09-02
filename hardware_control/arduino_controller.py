@@ -1,13 +1,14 @@
-from pyfirmata import Arduino, util
-from hardware_control.pedal_input_manager import PedalInputManager
-from common.config import ARDUINO_PORT
+
+from hardware_control.serial_communication import ArduinoWheel
+from hardware_control.devices_input_manager import PedalInputManager, WheelInputManager
+from common.config import ARDUINO_PORT, BPS
 
 class ArduinoController():
     def __init__(self):
 
-        self.board = Arduino(ARDUINO_PORT)
+        self.board = ArduinoWheel(ARDUINO_PORT, BPS)
 
-        self.pedal_mannager = PedalInputManager(self.board)
+        self.pedal_manager = PedalInputManager(self.board)
 
-        self.it = util.Iterator(self.board)
-        self.it.start()
+        self.wheel_manager = WheelInputManager(self.board)
+

@@ -6,7 +6,8 @@ TARGET_MAX = 0x8000
 
 # Devices Id's
 VJOY_ID = 1
-ARDUINO_PORT = "COM9"
+ARDUINO_PORT = "COM4"
+BPS = 115200  
 
 # UI styles
 STYLES = Style.from_dict({

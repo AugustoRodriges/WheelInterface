@@ -1,6 +1,20 @@
 # ui/containers/__init__.py
-import sys
-import os
+from typing import Callable
+from prompt_toolkit.layout.containers import WindowAlign
+from prompt_toolkit.widgets import Label
 
-sys.path.append(os.path.abspath('C:\\Users\\augus\\Documentos\\WheelInterface'))
-sys.path.append(os.path.abspath('C:\\Users\\augus\Documentos\\GitHub\\WheelInterface\\ui\\containers'))
+class Data():
+
+    def create_container(self):
+        raise NotImplementedError
+    
+    def update_container_content(self):
+        raise NotImplementedError
+
+class CustomLabel(Label):
+    def __init__(self):
+        super().__init__(text='')
+    
+    def update_content(self, text):
+        self.text = text
+        
